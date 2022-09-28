@@ -1,31 +1,32 @@
 {
-  "name": "node-red-contrib-sftp",
+  "name": "node-red-contrib-sftp-ssh2",
   "version": "0.0.8",
-  "description": "An SFTP client for node-red, a wrapper for ssh2-sftp-client",
+  "description": "An SFTP client for node-red, a wrapper for ssh2-sftp-client with privatekey support",
   "main": "sftp.js",
   "scripts": {
     "test": ""
   },
   "dependencies": {
-    "ssh2-sftp-client": "2.1.0"
+    "ssh2-sftp-client": "^9.0.4"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jonferreira/node-red-contrib-sftp.git"
+    "url": "https://github.com/ravi-kaushish/node-red-contrib-sftp-ssh2.git"
   },
   "keywords": [
     "node-red",
-    "sftp"
+    "sftp",
+    "ssh"
   ],
   "node-red": {
     "nodes": {
       "sftp": "sftp.js"
     }
   },
-  "author": "Jónatas Ferreira",
+  "author": "Ravi Kant Sharma",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/jonferreira/node-red-contrib-sftp/issues"
+    "url": "https://github.com/ravi-kaushish/node-red-contrib-sftp-ssh2/issues"
   },
-  "homepage": "https://github.com/jonferreira/node-red-contrib-sftp#readme"
+  "homepage": "https://github.com/ravi-kaushish/node-red-contrib-sftp-ssh2#readme"
 }
