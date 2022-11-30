@@ -80,7 +80,18 @@
 							case "list":
 								return sftp.list(this.remoteFilePath);
 							case "get":
-								return sftp.get(this.remoteFilePath, this.useCompression, this.encoding);
+								var options = {
+								  readStreamOptions: {
+								    flags: 'r',
+								    encoding: this.encoding,
+								    handle: null,
+								    mode: 0o666,
+								    autoClose: true
+								  },
+								  pipeOptions: {
+								    end: false
+								  }};								
+								return sftp.get(this.remoteFilePath, this.localFilePath, options);
 							case "put":
 								return sftp.put(this.localFilePath, this.remoteFilePath, this.useCompression, this.encoding);
 							case "mkdir":
