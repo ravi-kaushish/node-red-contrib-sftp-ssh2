@@ -68,7 +68,7 @@
                     $("#node-input-recursive").parent().hide();
                 } else if ($("#node-input-method").val() === "get") {
                     $("#node-input-remoteFilePath").parent().show();
-                    $("#node-input-localFilePath").parent().hide();
+                    $("#node-input-localFilePath").parent().show();
                     $("#node-input-remoteDestPath").parent().hide();
                     $("#node-input-mode").parent().hide();
                     $("#node-input-useCompression").parent().show();
@@ -209,7 +209,7 @@ group: // group ID
 </code></pre>
 <h3><a id="user-content-get" class="anchor" href="https://github.com/jyu213/ssh2-sftp-client#get" aria-hidden="true"></a>Get</h3>
 <p>get a new readable stream for path. The encoding is passed to Node Stream (<a href="https://nodejs.org/api/stream.html" rel="nofollow">https://nodejs.org/api/stream.html</a>) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Defaults to 'utf8'.</p>
-<pre><code>sftp.get(remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
+<pre><code>sftp.get(remoteFilePath, localFilePath, [addtionalOptions]);
 </code></pre>
 <h3><a id="user-content-put" class="anchor" href="https://github.com/jyu213/ssh2-sftp-client#put" aria-hidden="true"></a>Put</h3>
 <p>upload a file. it can be <code>localPath</code> or <code>Buffer</code> or <code>Stream</code>.</p>
