@@ -1,154 +1,166 @@
 (function () {
+  var debug = false;
 
-	var debug = false;
+  module.exports = function (RED) {
+    var SFTPCredentialsNode, SFTPNode;
+    var Client = require("ssh2-sftp-client");
 
-	module.exports = function (RED) {
-		var SFTPCredentialsNode, SFTPNode;
-		var Client = require('ssh2-sftp-client');
+    SFTPCredentialsNode = function (config) {
+      RED.nodes.createNode(this, config);
+      var node = this;
+      if (debug) {
+        node.warn(config);
+      }
+      this.host = config.host;
+      this.port = config.port;
+      this.username = config.username;
+      this.password = config.password;
+    };
 
-		SFTPCredentialsNode = function (config) {
+    SFTPNode = function (config) {
+      var key, node, value;
+      RED.nodes.createNode(this, config);
+      node = this;
+      for (key in config) {
+        value = config[key];
+        node[key] = value;
+      }
 
-			RED.nodes.createNode(this, config);
+      this.server = RED.nodes.getNode(config.server);
 
-			var node = this;
+      if (debug) {
+        node.warn(this);
+      }
 
-			if (debug) { node.warn(config); }
+      return this.on(
+        "input",
+        (function (_this) {
+          return function (msg) {
+            node.status({
+              fill: "grey",
+              shape: "dot",
+              text: "connecting",
+            });
 
-			this.host = config.host;
-			this.port = config.port;
-			this.username = config.username;
-			this.password = config.password;
+            var sftp = new Client();
 
-			//return this.host = config.host;
-		};
+            if (debug) {
+              node.warn(node);
+            }
+            sftp
+              .connect({
+                host: msg.sftp_ssh2_config.host || node.server.host,
+                port: msg.sftp_ssh2_config.port || node.server.port,
+                username: msg.sftp_ssh2_config.username || node.server.username,
+                password: msg.sftp_ssh2_config.password || node.server.password,
+                privateKey:
+                  msg.sftp_ssh2_config.privateKey ||
+                  msg.sshPrivateKey ||
+                  msg.privateKey,
+              })
+              .then(() => {
+                this.method = msg.method || node.method;
+                this.remoteFilePath = msg.remoteFilePath || node.remoteFilePath;
+                this.useCompression = msg.useCompression || node.useCompression;
+                this.encoding = msg.encoding || node.encoding;
+                this.localFilePath = msg.localFilePath || node.localFilePath;
+                this.remoteDestPath = msg.remoteDestPath || node.remoteDestPath;
+                this.mode = msg.mode || node.mode;
 
-		SFTPNode = function (config) {
-			var key, node, value;
+                if (debug) {
+                  node.warn(this.method);
+                }
 
-			RED.nodes.createNode(this, config);
+                node.status({
+                  shape: "dot",
+                  fill: "yellow",
+                  text: node.method,
+                });
 
-			node = this;
+                switch (this.method) {
+                  case "list":
+                    return sftp.list(this.remoteFilePath);
+                  case "get":
+                    var options = {
+                      readStreamOptions: {
+                        flags: "r",
+                        encoding: this.encoding,
+                        handle: null,
+                        mode: 0o666,
+                        autoClose: true,
+                      },
+                      pipeOptions: {
+                        end: false,
+                      },
+                    };
+                    return sftp.get(
+                      this.remoteFilePath,
+                      this.localFilePath,
+                      options
+                    );
+                  case "put":
+                    return sftp.put(
+                      this.localFilePath,
+                      this.remoteFilePath,
+                      this.useCompression,
+                      this.encoding
+                    );
+                  case "mkdir":
+                    return sftp.mkdir(this.remoteFilePath);
+                  case "rmdir":
+                    return sftp.rmdir(this.remoteFilePath);
+                  case "delete":
+                    return sftp.delete(this.remoteFilePath);
+                  case "rename":
+                    return sftp.rename(
+                      this.remoteFilePath,
+                      this.remoteDestPath
+                    );
+                  case "chmod":
+                    return sftp.chmod(this.remoteFilePath, this.mode);
+                }
+              })
+              .then((data) => {
+                if (debug) {
+                  node.warn(data);
+                }
 
-			for (key in config) {
-				value = config[key];
-				node[key] = value;
-			}
+                sftp.end();
 
-			this.server = RED.nodes.getNode(config.server);
+                node.status({
+                  shape: "dot",
+                  fill: "green",
+                  text: "Success",
+                });
 
-			if (debug) { node.warn(this); }
+                msg.payload = data;
+                msg.remoteFilePath = this.remoteFilePath;
 
-			return this.on('input', (function (_this) {
+                node.send(msg);
+              })
+              .catch((err) => {
+                if (debug) {
+                  node.warn(err);
+                }
 
-				return function (msg) {
+                sftp.end();
 
-					var body, req, request;
+                node.status({
+                  shape: "dot",
+                  fill: "red",
+                  text: "Error: " + err,
+                });
 
-					node.status({
-						fill: "grey",
-						shape: "dot",
-						text: "connecting"
-					});
+                msg.payload = err;
+                msg.error = true;
 
-					var sftp = new Client();
-
-					if (debug) { node.warn(node); }
-					sftp.connect({
-						host: node.server.host,
-						port: node.server.port,
-						username: node.server.username,
-						password: node.server.password,
-						privateKey: msg.sshPrivateKey || msg.privateKey
-					}).then(() => {
-						this.method = msg.method || node.method;
-						this.remoteFilePath = msg.remoteFilePath || node.remoteFilePath;
-						this.useCompression = msg.useCompression || node.useCompression;
-						this.encoding = msg.encoding || node.encoding;
-						this.localFilePath = msg.localFilePath || node.localFilePath;
-						this.remoteDestPath = msg.remoteDestPath || node.remoteDestPath;
-						this.mode = msg.mode || node.mode;
-
-						if (debug) { node.warn(this.method); }
-
-						node.status({
-							shape: "dot",
-							fill: "yellow",
-							text: node.method
-						});
-
-						switch (this.method) {
-							case "list":
-								return sftp.list(this.remoteFilePath);
-							case "get":
-								var options = {
-								  readStreamOptions: {
-								    flags: 'r',
-								    encoding: this.encoding,
-								    handle: null,
-								    mode: 0o666,
-								    autoClose: true
-								  },
-								  pipeOptions: {
-								    end: false
-								  }};								
-								return sftp.get(this.remoteFilePath, this.localFilePath, options);
-							case "put":
-								return sftp.put(this.localFilePath, this.remoteFilePath, this.useCompression, this.encoding);
-							case "mkdir":
-								return sftp.mkdir(this.remoteFilePath);
-							case "rmdir":
-								return sftp.rmdir(this.remoteFilePath);
-							case "delete":
-								return sftp.delete(this.remoteFilePath);
-							case "rename":
-								return sftp.rename(this.remoteFilePath, this.remoteDestPath);
-							case "chmod":
-								return sftp.chmod(this.remoteFilePath, this.mode);
-						}
-
-					}).then((data) => {
-
-						if (debug) { node.warn(data); }
-
-						sftp.end();
-
-						node.status({
-							shape: "dot",
-							fill: "green",
-							text: "Success"
-						});
-
-						msg.payload = data;
-						msg.remoteFilePath = this.remoteFilePath;
-
-						node.send(msg);
-
-
-					}).catch((err) => {
-
-						if (debug) { node.warn(err); }
-
-						sftp.end();
-
-						node.status({
-							shape: "dot",
-							fill: "red",
-							text: "Error: " + err
-						});
-
-						msg.payload = err;
-						msg.error = true;
-
-						node.send(msg);
-
-					});
-
-				};
-			})(this));
-
-		};
-		RED.nodes.registerType("SSH-SFTP-credentials", SFTPCredentialsNode);
-		return RED.nodes.registerType("SSH-SFTP-main", SFTPNode);
-	};
-
+                node.send(msg);
+              });
+          };
+        })(this)
+      );
+    };
+    RED.nodes.registerType("SSH-SFTP-credentials", SFTPCredentialsNode);
+    return RED.nodes.registerType("SSH-SFTP-main", SFTPNode);
+  };
 }).call(this);

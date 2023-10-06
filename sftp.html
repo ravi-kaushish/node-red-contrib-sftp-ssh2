@@ -20,44 +20,44 @@
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('SSH-SFTP-credentials',{
+    RED.nodes.registerType('SSH-SFTP-credentials', {
         category: 'config',
         defaults: {
-            host:     { value:"127.0.0.1" },
-            port:     { value:"22" },
-            username:     { value:"" },
-            password:  { value:"" },
+            host: { value: "127.0.0.1" },
+            port: { value: "22" },
+            username: { value: "" },
+            password: { value: "" },
         },
-        label: function() {
-            return this.username+"@"+this.host || "";
+        label: function () {
+            return this.username + "@" + this.host || "";
         }
     });
 
-	
-    RED.nodes.registerType('SSH-SFTP-main',{
+
+    RED.nodes.registerType('SSH-SFTP-main', {
         category: 'storage',
-        color:    '#E9967A',
-		paletteLabel: "SFTP",
+        color: '#E9967A',
+        paletteLabel: "SFTP",
         defaults: {
-            path:  { value:"/" },
-            method:  { value:"" },
-            remoteFilePath:  { value:"/" },
-            localFilePath:  { value:"/" },
-            remoteDestPath:  { value:"/" },
-            useCompression:  { value:"" },
-            encoding:  { value:"utf8" },
-            mode:  { value:"" },
-            recursive:  { value:false },
-            server:  { type:"SSH-SFTP-credentials", required:true }
+            path: { value: "/" },
+            method: { value: "" },
+            remoteFilePath: { value: "/" },
+            localFilePath: { value: "/" },
+            remoteDestPath: { value: "/" },
+            useCompression: { value: "" },
+            encoding: { value: "utf8" },
+            mode: { value: "" },
+            recursive: { value: false },
+            server: { type: "SSH-SFTP-credentials", required: true }
         },
-        inputs:  1,
+        inputs: 1,
         outputs: 1,
         icon: "white-globe.png",
-        label: function() {
-            return this.server.hostname||"SFTP";
+        label: function () {
+            return this.server.hostname || "SFTP";
         },
-		oneditprepare: function() {
-			$("#node-input-method").change(function() {
+        oneditprepare: function () {
+            $("#node-input-method").change(function () {
                 if ($("#node-input-method").val() === "list") {
                     $("#node-input-remoteFilePath").parent().show();
                     $("#node-input-localFilePath").parent().hide();
@@ -73,7 +73,7 @@
                     $("#node-input-mode").parent().hide();
                     $("#node-input-useCompression").parent().show();
                     $("#node-input-encoding").parent().show();
-					$("#node-input-recursive").parent().hide();
+                    $("#node-input-recursive").parent().hide();
                 } else if ($("#node-input-method").val() === "put") {
                     $("#node-input-remoteFilePath").parent().show();
                     $("#node-input-localFilePath").parent().show();
@@ -81,7 +81,7 @@
                     $("#node-input-mode").parent().hide();
                     $("#node-input-useCompression").parent().show();
                     $("#node-input-encoding").parent().show();
-					$("#node-input-recursive").parent().hide();
+                    $("#node-input-recursive").parent().hide();
                 } else if ($("#node-input-method").val() === "mkdir") {
                     $("#node-input-remoteFilePath").parent().show();
                     $("#node-input-localFilePath").parent().hide();
@@ -89,7 +89,7 @@
                     $("#node-input-mode").parent().hide();
                     $("#node-input-useCompression").parent().hide();
                     $("#node-input-encoding").parent().hide();
-					$("#node-input-recursive").parent().show();
+                    $("#node-input-recursive").parent().show();
                 } else if ($("#node-input-method").val() === "rmdir") {
                     $("#node-input-remoteFilePath").parent().show();
                     $("#node-input-localFilePath").parent().hide();
@@ -97,7 +97,7 @@
                     $("#node-input-mode").parent().hide();
                     $("#node-input-useCompression").parent().hide();
                     $("#node-input-encoding").parent().hide();
-					$("#node-input-recursive").parent().show();
+                    $("#node-input-recursive").parent().show();
                 } else if ($("#node-input-method").val() === "delete") {
                     $("#node-input-remoteFilePath").parent().show();
                     $("#node-input-localFilePath").parent().hide();
@@ -105,7 +105,7 @@
                     $("#node-input-mode").parent().hide();
                     $("#node-input-useCompression").parent().hide();
                     $("#node-input-encoding").parent().hide();
-					$("#node-input-recursive").parent().hide();
+                    $("#node-input-recursive").parent().hide();
                 } else if ($("#node-input-method").val() === "rename") {
                     $("#node-input-remoteFilePath").parent().show();
                     $("#node-input-localFilePath").parent().hide();
@@ -113,7 +113,7 @@
                     $("#node-input-mode").parent().hide();
                     $("#node-input-useCompression").parent().hide();
                     $("#node-input-encoding").parent().hide();
-					$("#node-input-recursive").parent().hide();
+                    $("#node-input-recursive").parent().hide();
                 } else if ($("#node-input-method").val() === "chmod") {
                     $("#node-input-remoteFilePath").parent().show();
                     $("#node-input-localFilePath").parent().hide();
@@ -121,10 +121,10 @@
                     $("#node-input-mode").parent().show();
                     $("#node-input-useCompression").parent().hide();
                     $("#node-input-encoding").parent().hide();
-					$("#node-input-recursive").parent().hide();
+                    $("#node-input-recursive").parent().hide();
                 }
             });
-		}
+        }
     });
 </script>
 
@@ -188,7 +188,16 @@
 <script type="text/x-red" data-help-name="SSH-SFTP-main">
 <p>An SFTP client for node-red, a wrapper for <a href="https://github.com/jyu213/ssh2-sftp-client">ssh2-sftp-client</a></p>
 <p>Each variable can be overriden with msg.xxx</p>
-<p>privateKey property for the node module can be overriden by msg.sshPrivateKey or by using msg.privateKey properties.</p>
+
+<p>Each Config variable in the config node i.e. host, port, username, password and privateKey can be overriden by msg.sftp_ssh2_config.xxxx</p>
+<code>
+    host => msg.sftp_ssh2_config.host
+    port => msg.sftp_ssh2_config.port
+    username => msg.sftp_ssh2_config.username
+    password => msg.sftp_ssh2_config.password
+    privateKey => msg.sftp_ssh2_config.privateKey
+</code>
+
 <h3><a id="user-content-list" class="anchor" href="https://github.com/jyu213/ssh2-sftp-client#list" aria-hidden="true"></a>List</h3>
 <p>Retrieves a directory listing.</p>
 <pre><code>sftp.list(remoteFilePath)
@@ -239,5 +248,4 @@ sftp.rmdir(localPath, recursive);
 <p>modify rights to remoteDestPath file</p>
 <pre><code>sftp.chmod(remoteDestPath, mode);
 </code></pre>
-
 </script>
