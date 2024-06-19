@@ -54,7 +54,7 @@
         outputs: 1,
         icon: "white-globe.png",
         label: function () {
-            return this.server.hostname || "SFTP";
+            return this.server.host || "SFTP";
         },
         oneditprepare: function () {
             $("#node-input-method").change(function () {
